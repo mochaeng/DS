@@ -1,5 +1,6 @@
 import time 
 from Matrix import *
+from threading import Thread, Lock
 
 def get_lines_from(path):
     with open(path) as f:
@@ -27,26 +28,70 @@ def multiply(A: Matrix, B: Matrix) -> Matrix:
                 C.matrix[i][j] += A.matrix[i][k] * B.matrix[k][j]
     return C
 
-path = '4_int_better.txt'
+def multiply_thread_safe(A: Matrix, B: Matrix, index: int) -> Matrix:
+    global share_memory, mutex
+    if A.m != B.n:
+        return
+    C = Matrix(A.n, B.m)
+    m = A.m
+    print(f'size: {m}')
+    for i in range(A.n):
+        for j in range(B.m):
+            for k in range(m):
+                C.matrix[i][j] += A.matrix[i][k] * B.matrix[k][j]
+
+    with mutex:
+        share_memory[index].append(C)
+
+def mount_matrix():
+    global share_memory
+
+mutex = Lock()
+split_times = 2
+
+path = 'res/4_int_better.txt'
 lines = get_lines_from(path)
+
 
 A = get_matrix(lines)
 B = get_matrix(lines)
 
+share_memory = [[] for i in range(split_times * split_times)]
+
 # before = time.time()
 # result = multiply(A, B)
 # after = time.time()
-split_times = 2
 
-a_in_lines = create_from_lists(A.split_by_lines(2))
-b_in_lines = create_from_lists(B.split_by_columns(2))
+a_in_lines = create_from_lists(A.split_by_lines(split_times))
+b_in_columns = create_from_lists(B.split_by_columns(split_times))
 
+results = []
+print(len(a_in_lines))
+print('----- Lines && Columns ----------')
 print(a_in_lines[0])
-print(b_in_lines[0])
+print(b_in_columns[0])
 print(multiply(A, B))
-print(multiply(a_in_lines[0], b_in_lines[0]))
+print(multiply(a_in_lines[0], b_in_columns[0]))
 
-# print(result)
+pool = []
+thread_idx = 0
+for a_line in a_in_lines:
+    for b_line in b_in_columns:
+        t = Thread(target=multiply_thread_safe, args=[a_line, b_line, thread_idx])
+        pool.append(t)
+        thread_idx += 1
+print(f'Thread index: {thread_idx}')
+for t in pool:
+    t.start()
+
+for t in pool:
+    t.join()
+
+M = []
+for m in share_memory:
+    M += m
+
+print(M)
 # print(f'Tempo para multiplicar: ({after - before})')
 # A = parser_lines(lines)
 # print(lines)

@@ -27,12 +27,12 @@ class Matrix:
         size = int(self.n / num_pieces)
         lists = []
         counter = 0
-        for k in range(size):
+        for k in range(num_pieces):
             lists.append([])
-            for i in range(self.n):
+            for i in range(self.m):
                 # lists[k].append(self.matrix[::][i][0:2])
-                lists[k].append(self.matrix[::][i][counter:counter+num_pieces])
-            counter += num_pieces
+                lists[k].append(self.matrix[::][i][counter:counter+size])
+            counter += size 
         return lists
 
     def __str__(self):
