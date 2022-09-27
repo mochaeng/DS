@@ -43,7 +43,6 @@ class Matrix:
             matrix_str += '\n'
         return matrix_str
 
-
 def create_from_lists(lists):
     if len(lists) == 0:
         return
