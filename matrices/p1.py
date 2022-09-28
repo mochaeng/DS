@@ -1,106 +1,52 @@
-import time 
+import time
+from threading import Lock
+from multiprocessing import cpu_count
+from parser import *
 from Matrix import *
-from threading import Thread, Lock
 import numpy as np
+from utils import populate_numpy_array
+from writing import write
 
 
-def get_lines_from(path):
-    with open(path) as f:
-        lines = f.readlines()
-    return lines
+def multiply(A: np.ndarray, B: np.ndarray):
+    a_m = A.shape[1]
+    b_n = B.shape[0]
 
-def get_matrix(lines):
-    row_length, columnm_length = lines[0].split(' ')
-    matrix = Matrix(int(row_length), int(columnm_length))
-    for i in range(1, int(row_length) + 1):
-        line = lines[i].strip().split(' ')
-        for j in range(len(line)):
-            matrix.matrix[i-1][j] = float(line[j])
-    return matrix
-
-
-def multiply(A: Matrix, B: Matrix) -> Matrix:
-    if A.m != B.n:
-        return
-    C = Matrix(A.n, B.m)
-    m = A.m
-    print(f'size: {m}')
-    for i in range(A.n):
-        for j in range(B.m):
-            for k in range(m):
-                C.matrix[i][j] += A.matrix[i][k] * B.matrix[k][j]
-    return C
-
-
-def multiply_thread_safe(A: Matrix, B: Matrix, index: int) -> Matrix:
-    global share_memory, mutex
-    if A.m != B.n:
+    if a_m != b_n:
         return
 
-    C = Matrix(A.n, B.m)
-    m = A.m
-    print(f'size: {m}')
-    for i in range(A.n):
-        for j in range(B.m):
-            for k in range(m):
-                C.matrix[i][j] += A.matrix[i][k] * B.matrix[k][j]
+    m3 = np.zeros((A.shape[0], B.shape[1]))
+    for i in range(A.shape[0]):
+        for j in range(B.shape[1]):
+            for k in range(A.shape[1]):
+                m3[i][j] += A[i][k] * B[k][j]
 
-    print(f'Acabei: {index}')
-    with mutex:
-        share_memory[index].append(C)
+    return m3
 
-def mount_matrix():
-    global share_memory
+
+num_cpu_cores = cpu_count()
 
 mutex = Lock()
-split_times = 2
-
 path = 'res/4_int_better.txt'
+
 lines = get_lines_from(path)
-
-
 A = get_matrix(lines)
-B = get_matrix(lines)
+m1 = np.zeros((A.n, A.n))
+m2 = np.zeros((A.n, A.n))
 
-share_memory = [[] for i in range(split_times * split_times)]
+populate_numpy_array(A, m1)
+populate_numpy_array(A, m2)
 
-# before = time.time()
-result = multiply(A, B)
-# after = time.time()
-print(result)
+before = time.time()
+final_matrix = multiply(m1, m2)
+after = time.time()
+total_time = after - before
 
-a_in_lines = create_from_lists(A.split_by_lines(split_times))
-b_in_columns = create_from_lists(B.split_by_columns(split_times))
-
-# print(f'a em linhas {a_in_lines}')
-#
-# results = []
-# print(len(a_in_lines))
-# print('----- Lines && Columns ----------')
-# # print(a_in_lines[0])
-# # print(b_in_columns[0])
-# t = multiply(A, B)
-# print(t)
-
-# print(multiply(a_in_lines[0], b_in_columns[0]))
-
-pool = []
-thread_idx = 0
-for a_line in a_in_lines:
-    for b_line in b_in_columns:
-        t = Thread(target=multiply_thread_safe, args=[a_line, b_line, thread_idx])
-        pool.append(t)
-        thread_idx += 1
-print(f'Thread index: {thread_idx}')
-
-for t in pool:
-    t.start()
-
-for t in pool:
-    t.join()
+print(final_matrix)
+print(f'Tempo para multiplicar: ({total_time} ms)')
 
 
-print(share_memory[0][0])
-# print(f'Tempo para multiplicar: ({after - before})')
-# A = parser_lines(lines)
-# print(lines)
+write('sol/p1/classic_4.txt\n', 'Solução p1 feita com abordagem tradicional O(3)\n', f'Num cores: {num_cpu_cores}\n',
+      f'Num cliente: {0}\n',
+      f'Num linhas: {final_matrix.shape[0]}\n', f'Num colunas: {final_matrix.shape[1]}\n',
+      f'Tempo para multiplicar e juntar: {total_time} segundos\n', final_matrix)
