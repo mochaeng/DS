@@ -8,8 +8,8 @@ def get_lines_from(path):
 
 
 def get_matrix(lines):
-    row_length, columnm_length = lines[0].split(' ')
-    matrix = Matrix(int(row_length), int(columnm_length))
+    row_length, column_length = lines[0].split(' ')
+    matrix = Matrix(int(row_length), int(column_length))
     for i in range(1, int(row_length) + 1):
         line = lines[i].strip().split(' ')
         for j in range(len(line)):

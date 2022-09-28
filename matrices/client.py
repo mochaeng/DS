@@ -8,8 +8,9 @@ def start():
     with client_socket as cs:
         cs.connect((server_ip, server_port))
         while True:
-            matrix = cs.recv(1024)
-            print(matrix)
+            index = cs.recv(1024).decode()
+            file = cs.recv(1024)
+            print(f'Sou o cliente: {index}')
 
 
 Thread(target=start()).start()

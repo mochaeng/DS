@@ -1,2 +1,2 @@
-server_port = 65000
+server_port = 65001
 server_ip = 'localhost'

@@ -39,17 +39,12 @@ def parser_and_create_matrix():
     return m1_in_lines, m2_in_columns
 
 
-def send_matrices_through_network(m1_lines: np.ndarray, m2_columns: np.ndarray):
-    idx_client = 0
-    for m1_line in m1_lines:
-        to_send = [m1_line]
-        for m2_column in m2_columns:
-            to_send.append(m2_column)
-
-        with client_connections[idx_client][0] as connection:
-            connection.sendfile(to_send)
-
-        idx_client += 1
+def send_matrices_through_network():
+    with open('res/4_int_better.txt') as file:
+        for client_conn, _ in client_connections:
+            with client_conn:
+                client_conn.sendfile(file)
+                # connection.sendall(str(idx_client))
 
 
 def start():
@@ -64,14 +59,15 @@ def start():
             client_connections.append((connection_socket, addr))
             clients_connected += 1
 
+            connection_socket.sendall(str(clients_connected).encode())
+
             print(f'{addr} conectou-se ao servidor')
             print(f'{len(client_connections)} clientes conectados ao servidor\n')
 
             if clients_connected == connected_clients_target:
                 break
 
-        m1, m2 = parser_and_create_matrix()
-        send_matrices_through_network(m1, m2)
+        # send_matrices_through_network()
 
 
 Thread(target=start()).start()

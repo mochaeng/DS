@@ -36,7 +36,7 @@ split_times = int(num_cores / 2) + 1
 share_memory: List[List[np.ndarray]] = [[] for i in range(split_times)]
 
 mutex = Lock()
-path = 'res/512.txt'
+path = 'res/1024.txt'
 lines = get_lines_from(path)
 
 A = get_matrix(lines)
@@ -82,7 +82,7 @@ total_time = after - before
 
 print(aggregate_matrix)
 
-write('sol/p4/classic_512.txt\n', 'Solução p4 feita com abordagem tradicional O(3)\n', f'Num cores: {num_cores}\n',
+write('sol/p4/classic_1024.txt\n', 'Solução p4 feita com abordagem tradicional O(3)\n', f'Num cores: {num_cores}\n',
       f'Num cliente: {0}\n',
       f'Num linhas: {aggregate_matrix.shape[0]}\n', f'Num colunas: {aggregate_matrix.shape[1]}\n',
       f'Tempo para multiplicar e juntar: {total_time} segundos\n', aggregate_matrix)
