@@ -10,11 +10,10 @@ from parser import *
 from typing import List
 
 
-
 def multiply_thread_safe(A: np.ndarray, B: numpy.ndarray, index: int):
     global share_memory, mutex
-    a_m = A.shape[0]
-    b_n = B.shape[1]
+    a_m = A.shape[1]
+    b_n = B.shape[0]
 
     if a_m != b_n:
         return
@@ -38,13 +37,13 @@ def populate_numpy_array(A: Matrix, M: np.array):
             M[i][j] = A.matrix[i][j]
 
 
-
-
 split_times = 2
-share_memory: List[List[np.ndarray]] = [[] for i in range(split_times * split_times)]
+share_memory: List[List[np.ndarray]] = [[] for i in range(split_times)]
+# share_memory: List[List[List[np.ndarray]]] = [[[]] for i in range(split_times * split_times)]
+
 
 mutex = Lock()
-path = 'res/4_int_better.txt'
+path = 'res/128.txt'
 lines = get_lines_from(path)
 
 A = get_matrix(lines)
@@ -58,43 +57,46 @@ populate_numpy_array(A, m1)
 populate_numpy_array(A, m2)
 
 m1_lines = np.array_split(m1, split_times, axis=0)
-m2_columns = np.array_split(m2, split_times, axis=1)
+# m2_columns = np.array_split(m2, split_times, axis=1)
 
 pool = []
-thread_idx = 0
-for a_line in m1_lines:
-    for b_line in m2_columns:
-        t = Thread(target=multiply_thread_safe, args=[a_line, b_line, thread_idx])
-        pool.append(t)
-        thread_idx += 1
-print(f'Thread index: {thread_idx}')
+for idx, a_line in enumerate(m1_lines):
+    t = Thread(target=multiply_thread_safe, args=[a_line, m2, idx])
+    pool.append(t)
 
-after = time.time()
+# thread_idx_i = 0
+# thread_idx_j = 0
+# for a_line in m1_lines:
+#     thread_idx_j = 0
+#     for b_line in m2_columns:
+#         t = Thread(target=multiply_thread_safe, args=[a_line, b_line, thread_idx_i, thread_idx_j])
+#         pool.append(t)
+#         thread_idx_j += 1
+#     thread_idx_i += 1
+# print(f'Thread index: {thread_idx}')
+
+before = time.time()
+
 for t in pool:
     t.start()
 
 for t in pool:
     t.join()
-before = time.time()
-
-print('Total para calcular')
-print(share_memory)
-
-print('----')
-print('Minis')
-
 
 aggregate_matrix = np.zeros((m1.shape[0], m1.shape[1]))
-
 i_global = 0
 j_global = 0
+for idx, matrix in enumerate(share_memory):
+    matrix_chunk = share_memory[idx][0]
+    for i_local in range(matrix_chunk.shape[0]):
+        for j_local in range(matrix_chunk.shape[1]):
+            aggregate_matrix[i_global][j_global] = matrix_chunk[i_local][j_local]
+            j_global += 1
+        j_global = 0
+        i_global += 1
 
-
-for idx, mini_matrix in enumerate(share_memory):
-    print(idx)
-    print(mini_matrix[0])
-
-    for i in range(split_times):
-        for j in range(split_times):
-            print(mini_matrix[0][i][j])
+after = time.time()
+print('\nMatriz final')
+print(aggregate_matrix)
+print(f'Tempo total para calcular e juntar: {after - before}')
 
