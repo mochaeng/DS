@@ -1,35 +1,42 @@
 import matplotlib.pyplot as plt
 
+
+def calc_speed_ups(time_p1, data):
+    speed_ups = []
+    for time in data:
+        speed_ups.append(time_p1 / time)
+    return speed_ups
+
+
 time_p1_128 = 1.574162483215332
-data_128 = [1.543799638748169, 1.4495034217834473, 1.4765193462371826]
+data_128 = [0.30016112327575684, 0.2930641174316406, 0.49961137771606445]
 
 time_p1_512 = 110.90756726264954
-data_512 = [119.84167861938477, 99.50273489952087, 98.60044288635254]
+data_512 = [17.266624927520752, 17.897562742233276, 31.755173444747925]
 
-speed_up_128 = []
-for time in data_128:
-    speed_up_128.append(time_p1_128 / time)
+time_p1_1024 = 851.7835717201233
+data_1024 = [140.77693152427673, 144.61570978164673, 252.8546233177185]
 
-speed_up_512 = []
-for time in data_512:
-    speed_up_512.append(time_p1_512 / time)
+time_p1_2048 = 6597.449085474014
+data_2048 = [1161.0003385543823, 1177.0072283744812, 2111.166804075241]
 
-# numberofemp_A = [13, 200, 250, 300, 350, 400]
-# numberofemp_B = [10, 100, 150]
-year = ['p2', 'p3', 'p4']
 
-# plot a line chart
-plt.plot(year, speed_up_128, marker='D', mfc='green', mec='yellow', ms='7')
-plt.plot(year, speed_up_512, marker='o', mfc='red', mec='green', ms='7')
+speed_up_128 = calc_speed_ups(time_p1_128, data_128)
+speed_up_512 = calc_speed_ups(time_p1_512, data_512)
+speed_up_1024 = calc_speed_ups(time_p1_1024, data_1024)
+speed_up_2048 = calc_speed_ups(time_p1_2048, data_2048)
 
-# set label name of x-axis title
+versions = ['p2', 'p3', 'p4']
+
+plt.plot(versions, speed_up_128, marker='D', mfc='green', mec='green', ms='7')
+plt.plot(versions, speed_up_512, marker='o', mfc='red', mec='red', ms='7')
+plt.plot(versions, speed_up_1024, marker='v', mfc='blue', mec='blue', ms='7')
+plt.plot(versions, speed_up_2048, marker='8', mfc='yellow', mec='yellow', ms='7')
+
+
 plt.xlabel("Versão")
-
-# set label name of x-axis title
 plt.ylabel("Speed-up")
-
-# set label name of chart title
 plt.title("Gráfico Speed-up")
 
-plt.legend(['matriz 128', 'matriz 512'])
+plt.legend(['matriz 128', 'matriz 512', 'matriz 1024', 'matriz 2048'])
 plt.show()
