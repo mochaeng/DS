@@ -22,7 +22,7 @@ class Matrix:
                 lists[k].append(self.matrix[counter][:])
                 counter += 1
         return lists
-    
+
     def split_by_columns(self, num_pieces):
         size = int(self.n / num_pieces)
         lists = []
@@ -30,17 +30,16 @@ class Matrix:
         for k in range(num_pieces):
             lists.append([])
             for i in range(self.m):
-                # lists[k].append(self.matrix[::][i][0:2])
-                lists[k].append(self.matrix[::][i][counter:counter+size])
-            counter += size 
+                lists[k].append(self.matrix[::][i][counter : counter + size])
+            counter += size
         return lists
 
     def __str__(self):
-        matrix_str = ''
+        matrix_str = ""
         for i in range(self.n):
             for j in range(self.m):
-                matrix_str += str(self.matrix[i][j]) + ' '
-            matrix_str += '\n'
+                matrix_str += str(self.matrix[i][j]) + " "
+            matrix_str += "\n"
         return matrix_str
 
 
